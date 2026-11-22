@@ -4,6 +4,8 @@ A private, local-first life workspace built with React, TypeScript, Vite and Ind
 
 **Release status:** usable local release. Cloud sync, hosted AI and Google integration source is included, but a live backend and OAuth client have not been provisioned. Local PostgreSQL isolation tests are not a claim that a hosted account has been tested.
 
+**Live site:** [compkrx.github.io/myhours](https://compkrx.github.io/myhours/) · **Source:** [github.com/compkrx/myhours](https://github.com/compkrx/myhours)
+
 The current product brief and reusable Codex build prompt are in [`docs/`](docs/). The shipped and pending scope is tracked in [PROJECT_STATUS.md](PROJECT_STATUS.md).
 
 ## Run it
@@ -34,8 +36,12 @@ Long horizon holds editable monthly checkpoints and date-specific daily logs. A 
 
 ## GitHub Pages
 
-1. Push this source to the repository's `main` branch. Include `.github/workflows/pages.yml` and `package-lock.json`. Never include personal backups, local database dumps or real credentials.
-2. Repository Settings → Pages → Source → **GitHub Actions**.
+This release is live at [compkrx.github.io/myhours](https://compkrx.github.io/myhours/). The source repository uses the included test-and-deploy GitHub Actions workflow.
+
+To publish a fork:
+
+1. Push this source to the fork's `main` branch. Include `.github/workflows/pages.yml` and `package-lock.json`. Never include personal backups, local database dumps or real credentials.
+2. In repository Settings → Pages, set Source to **GitHub Actions**.
 3. The workflow tests the app and builds a base path matching the repository name. A `username.github.io` repository uses `/`; other repositories use `/repo-name/`.
 4. Wait for the workflow's Pages deployment URL. Opening the URL on a second device does **not** copy this device's local data; use a private backup or configure cloud sync.
 
