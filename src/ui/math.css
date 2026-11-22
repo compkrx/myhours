@@ -1,0 +1,47 @@
+.math-lab{max-width:1500px;margin:0 auto}
+.math-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin:10px 0 22px}
+.math-heading h1{margin:0;font-size:clamp(2rem,4vw,3rem);letter-spacing:-.055em}
+.math-heading p{margin:7px 0 0}
+.math-heading .math-controls{margin:0}
+.math-lab-grid{display:grid;grid-template-columns:minmax(260px,.68fr) minmax(0,1.32fr);gap:16px;align-items:start}
+.math-panel{min-width:0;padding:clamp(15px,2.4vw,24px)}
+.math-panel>h2{display:flex;align-items:center;gap:9px;margin:0 0 17px;font-size:1.15rem;letter-spacing:-.025em}
+.math-calc-form{display:grid;gap:8px}
+.math-calc-form>label,.math-values>label{font-size:.85rem;font-weight:600}
+.math-settings{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:5px 0}
+.math-settings label,.math-window label,.math-values>label{display:grid;gap:5px;color:var(--muted);font-size:.8rem}
+.math-keypad{display:grid;grid-template-columns:repeat(6,minmax(34px,1fr));gap:5px;margin:7px 0}
+.math-key{min-height:37px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--text);font:inherit;font-size:.84rem}
+.math-key:hover{border-color:var(--accent);color:var(--accent)}
+.math-controls{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:10px}
+.math-result{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:19px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);color:var(--muted)}
+.math-result output{color:var(--text);font-size:1.8rem;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.035em}
+.math-error{color:var(--danger);font-size:.84rem}
+.math-lab details{margin-top:13px}
+.math-lab summary{cursor:pointer;color:var(--muted);font-size:.84rem}
+.math-calculations{padding-left:22px}
+.math-calculations button{padding:5px 0;border:0;background:none;color:var(--accent);font:inherit}
+.math-curve-list{display:grid;gap:8px}
+.math-curve-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:center}
+.math-curve-row>label{display:grid;grid-template-columns:8px minmax(36px,auto) minmax(100px,1fr);gap:8px;align-items:center;min-width:0}
+.math-curve-row>label>span:not(.math-curve-swatch){color:var(--muted);font-size:.78rem}
+.math-curve-swatch{width:7px;height:22px;border-radius:2px}
+.math-curve-row .math-error{grid-column:1/-1;margin:0 0 3px 18px}
+.math-chart{width:100%;min-width:0;min-height:240px;aspect-ratio:1.95;margin:12px 0 4px;border:1px solid var(--line);border-radius:5px;background:color-mix(in srgb,var(--surface) 72%,transparent);overflow:hidden}
+.math-svg{display:block;width:100%;height:100%;min-height:240px;color:var(--muted);touch-action:pan-y;cursor:crosshair}
+.math-svg.drag{touch-action:none;cursor:grab}.math-svg.drag:active{cursor:grabbing}
+.math-svg text{fill:var(--muted);font-size:10px;font-variant-numeric:tabular-nums}
+.math-gridline{stroke:var(--line);stroke-width:1;opacity:.75}
+.math-axis{stroke:var(--muted);stroke-width:1.2;opacity:.8}
+.math-probe{stroke:var(--accent);stroke-width:1;stroke-dasharray:4 4;opacity:.75}
+.math-graph-caption{font-size:.78rem;margin:8px 0}
+.math-window{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.math-window button{align-self:end;justify-self:start}
+.math-window .math-drag-toggle{grid-column:1/-1;margin:2px 0}
+.math-values{display:grid;gap:10px;margin-top:12px}
+.math-table-scroll{max-width:100%;overflow:auto}
+.math-table-scroll table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.82rem}
+.math-table-scroll th,.math-table-scroll td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+.math-table-scroll th{color:var(--muted);font-weight:600}
+@media(max-width:900px){.math-lab-grid{grid-template-columns:minmax(0,1fr)}.math-heading{align-items:flex-start;flex-direction:column}}
+@media(max-width:460px){.math-settings{grid-template-columns:1fr}.math-keypad{grid-template-columns:repeat(5,minmax(34px,1fr))}.math-curve-row>label{grid-template-columns:7px minmax(35px,auto) minmax(80px,1fr);gap:6px}.math-heading .math-controls{flex-wrap:wrap}}

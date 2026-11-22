@@ -1,0 +1,3 @@
+project_id = "myhours"
+[functions.life-ai]
+verify_jwt = true

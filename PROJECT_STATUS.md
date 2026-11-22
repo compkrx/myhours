@@ -1,0 +1,50 @@
+# MyHours release status · 0.1.0
+
+This is a working **local release**, with optional integration implementations awaiting live configuration. Full multi-device/cloud/hosted-AI acceptance remains open.
+
+| Feature                                                 | Implementation                      | Verification / limit                                                                                                                                       |
+| ------------------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React/TypeScript/Vite, routing, responsive shell        | Implemented                         | Strict typecheck, lint, root/subpath builds and phone/desktop browser checks                                                                               |
+| IndexedDB schema v1→v2, validated CRUD, tombstones/undo | Implemented                         | Persistence/reopen, stale-edit and reference tests                                                                                                         |
+| Today, priorities and deadline evidence                 | Implemented                         | Actual records only; unknown commitments are not included                                                                                                  |
+| Tasks, recurrence, dependencies, search                 | Implemented                         | Offline create/edit/complete/reload and undo tested; no OS reminder service                                                                                |
+| Notes, autosave, Markdown, related records, map         | Implemented                         | Serialized saves and safe rendering tested; explicit-link map, no automatic semantic links                                                                 |
+| Courses, assignments, reported grade snapshots          | Implemented                         | Reported percentages remain dated and separately labeled                                                                                                   |
+| Weighted grade calculator                               | Implemented                         | Known-weight and unknown-weight tests; no school-portal scraping                                                                                           |
+| Calendar day/week/month/agenda, buffers, conflicts      | Implemented                         | Overlap, DST and viewport tests; fixed recurrence is daily/weekly/weekdays                                                                                 |
+| Drag-date movement and keyboard alternatives            | Implemented                         | Confirmation before local mutation; recurring single-instance movement unsupported                                                                         |
+| Local `.ics` import/export                              | Implemented                         | Instant/ID round-trip test; imports expand recurrence within a bounded 30-day past / 90-day future window; floating and all-day timezone caveats are shown |
+| Conservative day draft / minimum viable day             | Implemented                         | No overlap, sleep-window, rest reservation, capacity and dependency tests                                                                                  |
+| One major project, next steps, evidence                 | Implemented                         | Active-project limit and generic CRUD; list and board-card views                                                                                           |
+| Learning / practice / evidence / 90-day arc             | Implemented                         | One primary + two explorations enforced; no mastery scores                                                                                                 |
+| Lifestyle, routines, qualitative check-ins              | Implemented                         | Validated local record flows; no medical inference                                                                                                         |
+| Money and savings goals                                 | Implemented                         | Manual data and category totals; no banks or trading                                                                                                       |
+| Careers and opportunities                               | Implemented                         | Source and eligibility fields; no scraped/fabricated opportunities                                                                                         |
+| Weekly review                                           | Implemented                         | Recent-edit facts and editable guided prompts; no automatic proof of activity                                                                              |
+| Long horizon + daily logs                               | Implemented                         | Editable proposals and a date-based five-field daily log; no invented future tasks                                                                         |
+| Full backup / transactional restore                     | Implemented                         | IDs, dates, schema and duplicate-ID validation; replacement needs confirmation                                                                             |
+| Selected Markdown/JSON snapshot                         | Implemented                         | Privacy-redaction and browser-download tests; preview required                                                                                             |
+| PWA offline shell and icons                             | Implemented                         | Offline Chromium reload; physical iPhone/Safari installation still needed                                                                                  |
+| Supabase Auth / manual sync / conflict UI               | Implemented, needs backend          | Canonical reconciliation tests; live signup, email delivery and two-device flow unverified; preferences device-local                                       |
+| RLS, CAS mutation, deletion, quota SQL                  | Implemented                         | Real local PostgreSQL negative tests with mocked Auth claims; hosted pgTAP/auth tests still needed                                                         |
+| Contextual local assistant / tools                      | Implemented                         | Grounding, no-fabrication, validated tool names and read-only tests                                                                                        |
+| Hosted AI gateway + request limits                      | Implemented, needs secrets/provider | Source present; hosted provider behavior and live cost not tested                                                                                          |
+| Tutor, richer AI drafts                                 | Requires connected model            | Local UI does not pretend to provide hosted tutoring                                                                                                       |
+| Google Calendar import / explicit event copy            | Implemented, needs OAuth            | No live account connected; no background calendar sync or remote update merge                                                                              |
+| Drive selected snapshot upload                          | Implemented, needs OAuth            | `drive.file`, app-accessible folders, explicit confirmation; live upload/expiry unverified                                                                 |
+| Static deployment workflow                              | Implemented                         | Repository Pages activation and deployed URL recorded separately after release                                                                             |
+| School file import port                                 | Implemented, manual only            | Previewed CSV/JSON/ICS/PDF/text imports stay local; Infinite Campus direct API sync requires district authorization                                       |
+| General on-device LLM / authenticated ChatGPT connector | Not implemented                     | No invented API or automatic ChatGPT access                                                                                                                |
+
+## Current additions in this build
+
+- Seven editable weekday routines have distinct starter plans. Check-offs are dated local records and never create assumed calendar events.
+- Textbooks & Courses has its own page with official study links and one-click private study notes. The lesson page contains original in-app practice and a separate resource directory.
+- Math Lab has a scientific calculator, radians/degrees, multiple graph expressions, bounds and a sampled table of values.
+- Music, appearance effects, cursor trails and the roaming companion are separate optional modules. Screen effects and the companion start off.
+- The school import port previews CSV, JSON, ICS, PDF and text files locally. Infinite Campus direct sync is not enabled; district authorization is required.
+- AI image attachment processing is local until the user is signed in, has a model function configured and confirms the request. Hosted model behavior is not live-tested.
+
+## Remaining production acceptance
+
+Configure and test the actual Supabase project with two eligible test accounts; deploy and red-team the model gateway; configure and test Google's OAuth client; test Safari/PWA installation on a physical iPhone; review actual personal deadlines and provider rules. Keep private backups throughout. Those steps require external account configuration and cannot be claimed from local tests alone.

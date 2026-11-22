@@ -1,0 +1,219 @@
+.companion-rail {
+  position: fixed;
+  z-index: 18;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  left: max(20px, min(246px, 27vw));
+  width: min(172px, 32vw);
+  pointer-events: none;
+}
+
+.companion-roam {
+  width: 52px;
+}
+
+.companion-trigger {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  color: inherit;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 4px 18px #0003;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: border-color 160ms ease;
+}
+
+.companion-trigger:hover,
+.companion-trigger:focus-visible {
+  border-color: var(--accent);
+}
+
+.companion-rover {
+  display: block;
+  flex-shrink: 0;
+  width: 42px;
+  height: 38px;
+}
+
+.companion-trigger:is(:hover, :focus-visible) .companion-rover {
+  animation: companion-hop 420ms ease;
+}
+
+.companion-rail[data-walking="on"] .companion-roam {
+  animation: companion-walk 13s ease-in-out infinite;
+}
+
+.companion-rail[data-walking="on"] .companion-foot {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: companion-step 350ms ease-in-out infinite alternate;
+}
+
+.companion-rail[data-walking="on"] .companion-foot-right {
+  animation-delay: -175ms;
+}
+
+.companion-rail:is(:hover, :focus-within) .companion-roam,
+.companion-rail:is(:hover, :focus-within) .companion-foot {
+  animation-play-state: paused;
+}
+
+.companion-eyes:not(.alert) {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: companion-blink 5.7s ease-in-out infinite;
+}
+
+@keyframes companion-walk {
+  0%,
+  16%,
+  100% {
+    transform: translateX(0);
+  }
+  43%,
+  62% {
+    transform: translateX(min(120px, 20vw));
+  }
+}
+
+@keyframes companion-step {
+  from {
+    transform: rotate(-17deg);
+  }
+  to {
+    transform: rotate(17deg);
+  }
+}
+
+@keyframes companion-hop {
+  42% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes companion-blink {
+  0%,
+  91%,
+  96%,
+  100% {
+    transform: scaleY(1);
+  }
+  94% {
+    transform: scaleY(0.13);
+  }
+}
+
+.companion-dialog {
+  display: grid;
+  gap: 14px;
+}
+
+.companion-greeting,
+.companion-mode,
+.companion-input-row,
+.companion-actions,
+.companion-prompts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.companion-greeting {
+  gap: 12px;
+  padding-bottom: 6px;
+}
+
+.companion-greeting p,
+.companion-dialog > p,
+.companion-permissions p {
+  margin: 0;
+}
+
+.companion-mode {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+}
+
+.companion-mode select {
+  width: auto;
+}
+
+.companion-permissions {
+  display: grid;
+  gap: 7px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.companion-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.875rem;
+}
+
+.companion-input-row input {
+  min-width: 0;
+}
+
+.companion-input-row button {
+  flex-shrink: 0;
+}
+
+.companion-prompts,
+.companion-actions {
+  flex-wrap: wrap;
+}
+
+.companion-prompts .button,
+.companion-actions .button {
+  padding: 6px 8px;
+  min-height: 34px;
+  font-size: 0.8rem;
+}
+
+.companion-actions {
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.companion-answer {
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.companion-answer p {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.companion-error {
+  color: var(--danger, #ff9992);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 760px) {
+  .companion-rail {
+    left: 14px;
+    bottom: calc(68px + env(safe-area-inset-bottom));
+  }
+
+  .companion-rail[data-walking="on"] .companion-roam {
+    animation-duration: 16s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .companion-rail *,
+  .companion-greeting * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

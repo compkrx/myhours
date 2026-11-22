@@ -1,0 +1,18 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+select plan(8);
+insert into auth.users(id,email) values('11111111-1111-4111-8111-111111111111','fake-a@example.invalid'),('22222222-2222-4222-8222-222222222222','fake-b@example.invalid');
+set local role authenticated;
+select set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',true);
+select lives_ok($q$select public.put_life_record('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','{"id":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","kind":"task","revision":1,"data":{"title":"Fake A"}}',0)$q$,'A creates own record');
+select is((select count(*)::int from public.life_records),1,'A reads own record');
+select throws_ok($q$select public.put_life_record('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','{"id":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","kind":"task","revision":2,"data":{"title":"stale"}}',0)$q$,'P0001','sync conflict','stale revision cannot overwrite');
+select set_config('request.jwt.claim.sub','22222222-2222-4222-8222-222222222222',true);
+select is((select count(*)::int from public.life_records),0,'B cannot read A');
+select lives_ok($q$select public.put_life_record('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','{"id":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","kind":"task","revision":1,"data":{"title":"Fake B"}}',0)$q$,'B writes isolated row with same ID');
+select is((select record->'data'->>'title' from public.life_records),'Fake B','B only sees own data');
+select throws_ok($q$select public.reserve_ai_request('11111111-1111-4111-8111-111111111111')$q$,'42501',null,'browser cannot reserve another user quota');
+select set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',true);
+select is((select record->'data'->>'title' from public.life_records),'Fake A','A record unchanged by B');
+select * from finish();
+rollback;
