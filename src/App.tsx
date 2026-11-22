@@ -19,7 +19,6 @@ import {
   Download,
   WifiOff,
   User,
-  Grid2X2,
 } from "lucide-react";
 import { localRepo, type Repository } from "./data/repository";
 import {
@@ -142,12 +141,14 @@ export default function App() {
     location.hash = "/" + next;
     setRoute(next);
     setMobileMenu(false);
+    window.scrollTo(0, 0);
   }, []);
   useEffect(() => {
     const hash = () => {
       if (location.hash === "#main") return;
       setRoute(currentRoute(location.hash));
       setMobileMenu(false);
+      window.scrollTo(0, 0);
     };
     window.addEventListener("hashchange", hash);
     const tick = setInterval(() => setClock(new Date()), 60000);
@@ -323,7 +324,9 @@ export default function App() {
       >
         Skip to content
       </a>
-      <div className={`app-shell ${collapsed ? "collapsed" : ""}`}>
+      <div
+        className={`app-shell ${collapsed ? "collapsed" : ""} ${route === "ai" ? "ai-active" : ""}`}
+      >
         <aside
           aria-label="Workspace navigation"
           className={`sidebar ${mobileMenu ? "mobile-open" : ""}`}
@@ -355,22 +358,14 @@ export default function App() {
           </button>
           <nav aria-label="Main navigation" className="desktop-navigation">
             {navigation.map((group) => (
-              <section
+              <details
                 key={group.label}
                 className="navigation-group"
-                aria-label={group.label}
+                open={group.entries.some((item) => item.id === route)}
               >
-                <h2>{group.label}</h2>
+                <summary>{group.label}</summary>
                 {group.entries
-                  .filter(
-                    (item) =>
-                      available(item.id) &&
-                      (desktopCore.includes(item.id) ||
-                        item.id === route ||
-                        ["school", "music", "settings", "appearance"].includes(
-                          item.id,
-                        )),
-                  )
+                  .filter((item) => available(item.id))
                   .map((item) => (
                     <a
                       key={item.id}
@@ -385,15 +380,8 @@ export default function App() {
                       {item.id === "tasks" && count > 0 ? <b>{count}</b> : null}
                     </a>
                   ))}
-              </section>
+              </details>
             ))}
-            <button
-              className="all-pages-button"
-              onClick={() => setMobileMenu(true)}
-            >
-              <Grid2X2 size={17} />
-              <span>All pages</span>
-            </button>
           </nav>
           <div className="sidebar-bottom">
             <div className="workspace-status">
@@ -606,8 +594,11 @@ export default function App() {
         <Modal title="Browse pages" close={() => setMobileMenu(false)} wide>
           <div className="dialog-content page-directory">
             {navigation.map((group) => (
-              <section key={group.label}>
-                <h3>{group.label}</h3>
+              <details
+                key={group.label}
+                open={group.entries.some((item) => item.id === route)}
+              >
+                <summary>{group.label}</summary>
                 <div>
                   {group.entries
                     .filter((item) => available(item.id))
@@ -623,7 +614,7 @@ export default function App() {
                       </a>
                     ))}
                 </div>
-              </section>
+              </details>
             ))}
           </div>
         </Modal>

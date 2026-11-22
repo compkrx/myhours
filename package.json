@@ -16,6 +16,7 @@
     "check:bundle": "node scripts/check-bundle.mjs"
   },
   "dependencies": {
+    "@mlc-ai/web-llm": "^0.2.89",
     "@supabase/supabase-js": "2.119.2",
     "date-fns": "4.4.0",
     "date-fns-tz": "3.2.0",

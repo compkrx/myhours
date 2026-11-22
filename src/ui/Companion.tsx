@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { ArrowUpRight, EyeOff, Footprints, Pause, Send } from "lucide-react";
-import { localAnswer } from "../domain/assistant";
+import type { ChatCompletionMessageParam } from "@mlc-ai/web-llm";
 import { titleOf, type Kind } from "../domain/model";
-import { requestAI } from "../integrations/ai";
+import {
+  localAI,
+  localModels,
+  type LocalModelId,
+} from "../integrations/local-ai";
 import { Button, Modal } from "./components";
 import { useApp } from "./context";
 import "./companion.css";
@@ -101,16 +105,16 @@ function CompanionControls({
   const { p, records, edit, navigate, setPreferences, notify } = useApp();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [mode, setMode] = useState<"local" | "hosted">("local");
-  const [shareRecords, setShareRecords] = useState(false);
-  const [consent, setConsent] = useState(false);
+  const [includeWorkspace, setIncludeWorkspace] = useState(false);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
   const [answer, setAnswer] = useState<{
     text: string;
     references: string[];
-    mode: "local" | "hosted";
   }>();
+  const model = p.aiModel as LocalModelId;
+  const modelName =
+    localModels.find((entry) => entry.id === model)?.name ?? "Gemma 3 · 1B";
   const availableRecords = records
     .filter((record) => companionScope.includes(record.kind))
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
@@ -118,7 +122,6 @@ function CompanionControls({
 
   function close() {
     setOpen(false);
-    setConsent(false);
   }
 
   async function savePreference(next: {
@@ -139,31 +142,44 @@ function CompanionControls({
   async function ask(question: string) {
     const text = question.trim();
     if (busy || !text) return;
-    setStatus("");
-    if (mode === "local") {
-      const result = localAnswer(text, availableRecords, p);
-      setAnswer({ text: result.text, references: result.references, mode });
-      return;
-    }
-    if (!consent) return;
     setBusy(true);
-    setConsent(false);
+    setAnswer({ text: "", references: [] });
+    setStatus("Starting the local model…");
+    const context = includeWorkspace
+      ? availableRecords.map((record) => ({
+          type: record.kind,
+          title: titleOf(record),
+          details: Object.entries(record.data)
+            .filter(
+              ([key, value]) =>
+                key !== "title" && typeof value !== "object" && value !== "",
+            )
+            .slice(0, 5)
+            .map(([key, value]) => `${key}: ${String(value).slice(0, 180)}`)
+            .join("; "),
+        }))
+      : [];
+    const messages: ChatCompletionMessageParam[] = [
+      {
+        role: "system",
+        content: `You are ${p.petName}, a kind and practical study companion. Answer general questions directly. Help with learning and choosing realistic next steps. Do not claim to have changed or saved anything. Be concise and honest about uncertainty.${context.length ? `\n\nThe user chose to include these local workspace records:\n${JSON.stringify(context).slice(0, 5000)}` : ""}`,
+      },
+      { role: "user", content: text },
+    ];
+    let response = "";
     try {
-      const result = await requestAI({
-        query: text,
-        records: shareRecords ? availableRecords : [],
-        scope: shareRecords ? companionScope : [],
-        timezone: p.timezone,
-      });
-      setAnswer({
-        mode,
-        text: [result.text, ...result.claims.map((claim) => claim.text)]
-          .filter(Boolean)
-          .join("\n\n"),
-        references: Array.from(
-          new Set(result.claims.flatMap((claim) => claim.references)),
-        ),
-      });
+      for await (const chunk of localAI.reply(model, messages, (report) =>
+        setStatus(report.text || "Loading model…"),
+      )) {
+        response += chunk;
+        setAnswer({ text: response, references: [] });
+        setStatus("Thinking…");
+      }
+      setStatus(
+        response
+          ? ""
+          : "The model returned an empty reply. Try a shorter question.",
+      );
     } catch (error) {
       setStatus(error instanceof Error ? error.message : String(error));
     } finally {
@@ -201,86 +217,47 @@ function CompanionControls({
                   : "Settle in. I’m here when you need a hand."}
               </p>
             </div>
-            <label className="companion-mode">
-              Answer mode
-              <select
-                value={mode}
-                disabled={busy}
-                onChange={(event) => {
-                  setMode(event.target.value === "hosted" ? "hosted" : "local");
-                  setConsent(false);
-                  setStatus("");
-                }}
-              >
-                <option value="local">Local planner</option>
-                <option value="hosted">Hosted AI</option>
-              </select>
-            </label>
-            {mode === "local" ? (
-              <>
-                <p className="hint">
-                  Uses up to 20 recent tasks, assignments, events and projects
-                  on this device.
-                </p>
-                <div className="companion-prompts">
-                  {suggestedQuestions.map((question) => (
-                    <Button
-                      key={question}
-                      type="button"
-                      variant="secondary"
-                      onClick={() => {
-                        setQuery(question);
-                        void ask(question);
-                      }}
-                    >
-                      {question}
-                    </Button>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="companion-permissions">
-                <p className="hint">
-                  Hosted AI requires a configured provider and a MyHours
-                  account.
-                </p>
-                <label className="check-label">
-                  <input
-                    type="checkbox"
-                    checked={shareRecords}
-                    disabled={busy}
-                    onChange={(event) => {
-                      setShareRecords(event.target.checked);
-                      setConsent(false);
-                    }}
-                  />{" "}
-                  Include these workspace records
-                </label>
-                {shareRecords ? (
-                  <details>
-                    <summary>Preview {availableRecords.length} records</summary>
-                    <ul className="context-items">
-                      {availableRecords.map((record) => (
-                        <li key={record.id}>
-                          {titleOf(record)} · {record.kind}
-                        </li>
-                      ))}
-                    </ul>
-                  </details>
-                ) : null}
-                <label className="check-label">
-                  <input
-                    type="checkbox"
-                    checked={consent}
-                    disabled={busy}
-                    onChange={(event) => setConsent(event.target.checked)}
-                  />{" "}
-                  Send this question
-                  {shareRecords ? " and the selected records" : ""} to the AI
-                  provider
-                </label>
-              </div>
-            )}
+            <p className="hint companion-model-note">
+              {modelName} · free, on this device. First use needs WebGPU.
+            </p>
+            <details className="companion-context">
+              <summary>
+                {includeWorkspace
+                  ? "Workspace context on"
+                  : "Add workspace context"}
+              </summary>
+              <label className="check-label">
+                <input
+                  type="checkbox"
+                  checked={includeWorkspace}
+                  disabled={busy}
+                  onChange={(event) =>
+                    setIncludeWorkspace(event.target.checked)
+                  }
+                />
+                Include recent tasks, assignments, events and projects
+              </label>
+              <p className="hint">
+                This information stays in your browser and is not sent to a
+                server.
+              </p>
+            </details>
+            <div className="companion-prompts">
+              {suggestedQuestions.map((question) => (
+                <Button
+                  key={question}
+                  type="button"
+                  variant="secondary"
+                  disabled={busy}
+                  onClick={() => {
+                    setQuery(question);
+                    void ask(question);
+                  }}
+                >
+                  {question}
+                </Button>
+              ))}
+            </div>
             <form
               className="companion-form"
               onSubmit={(event) => {
@@ -297,15 +274,9 @@ function CompanionControls({
                   maxLength={3000}
                   onChange={(event) => {
                     setQuery(event.target.value);
-                    setConsent(false);
                   }}
                 />
-                <Button
-                  type="submit"
-                  disabled={
-                    busy || !query.trim() || (mode === "hosted" && !consent)
-                  }
-                >
+                <Button type="submit" disabled={busy || !query.trim()}>
                   <Send size={16} /> Ask
                 </Button>
               </div>
@@ -317,17 +288,13 @@ function CompanionControls({
             ) : null}
             {busy ? (
               <p className="hint" role="status">
-                Waiting for the AI provider…
+                {status || "Loading the local model…"}
               </p>
             ) : null}
             {answer ? (
-              <div
-                className="companion-answer"
-                aria-live="polite"
-                aria-atomic="true"
-              >
+              <div className="companion-answer" aria-live="polite">
                 <span className="eyebrow">
-                  {answer.mode === "local" ? "LOCAL PLANNER" : "HOSTED AI"}
+                  `${p.petName.toUpperCase()} · ON-DEVICE AI`
                 </span>
                 <p>{answer.text}</p>
                 <div className="companion-prompts">

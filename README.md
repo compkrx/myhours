@@ -2,7 +2,7 @@
 
 A private, local-first life workspace built with React, TypeScript, Vite and IndexedDB. Tasks, notes, school, calendar, projects and the other local modules work without an account. Nothing is populated automatically.
 
-**Release status:** usable local release. Cloud sync, hosted AI and Google integration source is included, but a live backend and OAuth client have not been provisioned. Local PostgreSQL isolation tests are not a claim that a hosted account has been tested.
+**Release status:** usable local release. The built-in AI runs in the browser without an account or server. Cloud sync and Google connections need their own optional backend and OAuth setup.
 
 **Live site:** [compkrx.github.io/myhours](https://compkrx.github.io/myhours/) · **Source:** [github.com/compkrx/myhours](https://github.com/compkrx/myhours)
 
@@ -76,17 +76,9 @@ supabase db push
 
 The service deliberately exposes one RLS-protected record table with typed entity payloads and ID references. All browser mutation passes through a compare-and-swap RPC. Tombstones synchronize deletions. There is no background sync or automatic conflict winner.
 
-## Optional hosted AI
+## On-device AI
 
-The first-party assistant has working deterministic local tools. **Local tools are not a language model.** For hosted tutoring and contextual drafts:
-
-1. Deploy the database migration first and set a model provider's project-level spending cap.
-2. Configure the edge function's runtime secrets `APP_ORIGIN` (origin only), `MODEL_API_URL` (HTTPS OpenAI-compatible chat-completions endpoint), `MODEL_API_KEY`, and `MODEL_ID`. Use the CLI's `supabase secrets set --env-file` with a private, ignored file. Supabase supplies its own runtime project credentials; never copy those into frontend variables.
-3. Run `supabase functions deploy life-ai`. Keep JWT verification enabled.
-4. Set the public `VITE_AI_FUNCTION_URL` to the deployed function URL and rebuild.
-5. Sign in, sync selected records, choose categories in MyHours AI, inspect the approved record list, and explicitly consent before sending. Unknown or unsynced IDs are rejected. Suggestions open a review form; saving needs your confirmation.
-
-Limits: 20 reserved requests per UTC day, at least 10 seconds apart, 40 record IDs, 45,000 context characters, 1,800 output tokens, and request timeouts. Failed provider calls may consume a request reservation. Monetary cost is shown as unknown; consult the provider dashboard. See [AI_DESIGN.md](AI_DESIGN.md).
+Choose Gemma 3 1B, Gemma 2 2B, or Llama 3.2 1B from the AI page. MyHours uses WebGPU in the browser; the first prompt downloads and caches the selected model. No AI account, key, server, or sign-in is required. Use Chrome or Edge with WebGPU enabled. The smaller models trade some answer quality and speed for running locally. Image prompts are not supported by these text models. See [AI_DESIGN.md](AI_DESIGN.md) for model sizes, cache behavior and privacy details.
 
 ## Optional Google connections
 
@@ -121,6 +113,6 @@ Unit/integration tests cover IndexedDB, calculations, scheduling, exports, local
 - **Missing local records on another device/account:** local storage is per browser origin and profile. Account workspaces are separate. Restore privately or connect sync.
 - **Storage unavailable/private browsing:** use a profile that allows IndexedDB. Request persistent storage in Settings and keep private backups.
 - **Cloud conflict:** inspect both versions, choose, then sync again. Do not assume the newest timestamp is necessarily correct.
-- **AI unavailable:** use core features and local tools. Check authentication, synced context, function logs, rate limits and runtime configuration. Never paste secrets into chat or a public issue.
+- **AI unavailable:** check that the browser supports WebGPU and has enough graphics memory. Try Gemma 3 1B if a larger model fails. The rest of MyHours works without AI.
 
 See [PROJECT_STATUS.md](PROJECT_STATUS.md) for the complete limits, [ARCHITECTURE.md](ARCHITECTURE.md) for the design, and [PRIVACY.md](PRIVACY.md) for data handling.

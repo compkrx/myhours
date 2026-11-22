@@ -1,8 +1,14 @@
 import { expect, test } from "@playwright/test";
 
-test("companion answers locally, requires hosted consent, and can stop walking", async ({
+test("companion uses the selected local model and can stop walking", async ({
   page,
 }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(Navigator.prototype, "gpu", {
+      configurable: true,
+      value: undefined,
+    });
+  });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("./");
   await page.getByRole("button", { name: "Skip setup" }).click();
@@ -25,23 +31,18 @@ test("companion answers locally, requires hosted consent, and can stop walking",
   await companion.click();
 
   const dialog = page.getByRole("dialog", { name: "Ask Pip" });
-  await dialog.getByRole("button", { name: "What is overdue?" }).click();
   await expect(
-    dialog.getByText("No open items with a past recorded deadline", {
-      exact: false,
-    }),
+    dialog.getByText("Gemma 3 · 1B · free, on this device."),
   ).toBeVisible();
-
-  await dialog.getByLabel("Answer mode").selectOption("hosted");
-  const submit = dialog.getByRole("button", { name: "Ask", exact: true });
-  await expect(submit).toBeDisabled();
   await expect(
-    dialog.getByLabel("Include these workspace records"),
+    dialog.getByLabel("Include recent tasks, assignments, events and projects"),
   ).not.toBeChecked();
-  await dialog.getByLabel("Send this question to the AI provider").check();
-  await expect(submit).toBeEnabled();
   await dialog.getByLabel("Your question").fill("What should I do next?");
-  await expect(submit).toBeDisabled();
+  await dialog.getByRole("button", { name: "Ask", exact: true }).click();
+  await expect(dialog.getByRole("alert")).toContainText(
+    "does not support WebGPU",
+  );
+  await expect(dialog.getByLabel("Answer mode")).toHaveCount(0);
 
   await dialog.getByRole("button", { name: "Pause walking" }).click();
   await expect(

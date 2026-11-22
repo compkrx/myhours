@@ -5,7 +5,7 @@
   --accent-ink: var(--myhours-ink-dark, #10211b);
 }
 :root[data-ui-style][data-theme="light"] {
-  --accent: var(--myhours-accent-light, #245f4c);
+  --accent: var(--myhours-accent-light, #4c55a3);
   --accent-ink: var(--myhours-ink-light, #fff);
 }
 html[data-ui-style="terminal"] {

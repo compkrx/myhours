@@ -557,8 +557,9 @@ export default function Appearance() {
           >
             <h2 id="workspace-companion">Study companion</h2>
             <p>
-              Optional and off by default. Local questions use your saved tasks
-              and calendar only when you ask; hosted AI needs separate consent.
+              Optional and off by default. The companion uses the selected
+              on-device model. It reads workspace records only when you turn
+              on context for a question.
             </p>
             <label className="appearance-toggle">
               <input

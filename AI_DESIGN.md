@@ -1,17 +1,19 @@
 # MyHours AI
 
-The built-in screen is first-party application code. It is not an iframe or an embedded ChatGPT site. Core data access, schedules, priority explanations, grade calculations and read-only summaries work without a hosted model. The UI explicitly labels those tools as local and rule-based.
+The main AI page, lesson tutor, and roaming companion use the same selectable on-device model. They do not require a sign-in, provider account, API key, or server. Inference runs in the browser through [WebLLM](https://github.com/mlc-ai/web-llm) and WebGPU.
 
-Local validated tool names: `getUpcomingTasks`, `getCourseSnapshot`, `getAvailableTime`, `retrieveNotes`, `draftSchedule`, `analyzeGradeScenario`, `suggestProjectNextStep`, `summarizeWeek`, `buildShareableSnapshot`. They return structured values and do not mutate data. Grade scenarios use only provided assessment points and category weights; open-ended grade optimization is not implemented.
+Available models:
 
-The hosted path accepts a bounded question and approved record IDs/kinds, never an identity supplied by the caller. The edge function verifies the session with Auth, fetches those exact records under RLS, rejects incomplete/unsynced context, trims note bodies and reserves a rate-limited quota atomically. It calls an administrator-configured HTTPS provider using a server-side key. Provider output must satisfy a schema, and all claim and draft references must belong to approved records. The client validates again.
+- Gemma 3 · 1B — about 700 MB; recommended starting point.
+- Gemma 2 · 2B — about 1.9 GB; needs more memory.
+- Llama 3.2 · 1B — about 900 MB.
 
-Claims are displayed with openable record references. Introductory prose should contain no personal-data claims; concrete claims belong in the cited claim array. Schema and ID validation cannot establish full semantic accuracy. Review model answers against the underlying records. A fabricated fact with an otherwise valid citation remains a model risk.
+The first use downloads the selected model files from the model host and caches them in browser storage. Switching to a model that has not been used before downloads that model too. Later prompts run locally. WebLLM's [built-in model list](https://webllm.mlc.ai/models/) describes the browser model builds.
 
-Write authority is absent from the model endpoint. Suggested tasks open an editable preview and require an explicit Save. Calendar drafts require a separate confirmation and fresh overlap checks. Natural capture resolves ISO dates, today and tomorrow; named weekdays remain ambiguous and require an exact date in the review form. The model cannot delete, email, share, purchase, contact anyone or edit an external calendar.
+The AI page looks and behaves like a standard chat: conversations on the left, one model picker, and a composer. Chat history is saved in browser local storage while “Save chat history on this device” is on. Users can clear it from the chat rail. The optional “Add workspace context” control includes a small, bounded set of local tasks, classes, projects, events and notes in the browser prompt. It is off by default. Lesson tutoring shares the chosen model and can include the lesson text. The companion shares the model choice and asks separately before adding personal records.
 
-Privacy controls are per request. Full note contents are available only when the note category is selected and consent is given; no category is silently added. The first 40 selected records are visibly listed. Retrieval is bounded lexical/structured lookup, not a hidden vector index. Session history is not retained by default. The function logs no prompts or record bodies.
+These are small text models, so response quality and speed vary with the Chromebook or computer. Local inference requires a current browser with WebGPU and enough available graphics memory. Image input is not supported by the three local text models. There is no server fallback if WebGPU is unavailable; the page shows the reason and leaves the rest of the app usable.
 
-Cost controls: 20 reserved calls/user/UTC day, 10-second spacing, 16 KB request envelope, 40 IDs, 45,000 context characters, 1,800 maximum output tokens, 25-second provider timeout and output size/schema limits. These bound request usage; they do not calculate a dollar cost. Configure a provider-level hard spending limit and monitor that dashboard. The UI reports unknown monetary cost honestly.
+The system instructions tell the model to teach, plan, and answer clearly. The model has no tools that can create or change app records. A suggestion is only text; saving tasks, notes, lesson attempts, or calendar entries remains a separate user action.
 
-Source and local grounding tests are implemented. A hosted model, production quotas, live authorization, prompt-injection red-team evaluation and actual tutoring quality need credentials and have not been verified. Optional on-device model inference is not included.
+The prior authenticated edge-function integration remains in the repository for future work, but the chat page, lesson tutor, and companion no longer call it or expose provider configuration.

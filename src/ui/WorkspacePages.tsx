@@ -54,7 +54,7 @@ export function SignIn({ signedIn }: { signedIn: boolean }) {
                 ? "Create an account"
                 : "Sign in to MyHours"}
           </h1>
-          <p>Accounts enable cross-device sync and hosted AI.</p>
+          <p>Accounts enable cross-device sync. MyHours AI runs in your browser and does not need an account.</p>
         </div>
         <LogIn size={28} />
       </div>

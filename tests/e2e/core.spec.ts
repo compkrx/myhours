@@ -205,16 +205,26 @@ test("seven-day routines save edits and keep today's check-offs after reload", a
 }) => {
   await start(page);
   await route(page, "routines");
-  await expect(page.getByRole("heading", { name: "A rhythm that fits." })).toBeVisible();
-  const currentDay = page.locator(".routine-days button").filter({ hasText: "Today" });
+  await expect(
+    page.getByRole("heading", { name: "A rhythm that fits." }),
+  ).toBeVisible();
+  const currentDay = page
+    .locator(".routine-days button")
+    .filter({ hasText: "Today" });
   await expect(currentDay).toHaveCount(1);
   const plan = page.getByLabel(/checklist$/i);
-  await plan.fill("Wash up and eat.\nPack the things I actually need.\nChoose one real task after a break.");
+  await plan.fill(
+    "Wash up and eat.\nPack the things I actually need.\nChoose one real task after a break.",
+  );
   await page.getByRole("button", { name: "Save this day" }).click();
-  await page.getByRole("button", { name: "Complete: Wash up and eat." }).click();
+  await page
+    .getByRole("button", { name: "Complete: Wash up and eat." })
+    .click();
   await expect(page.getByText("1 of 3 steps checked today.")).toBeVisible();
   await page.reload();
-  await expect(page.getByRole("button", { name: "Uncheck: Wash up and eat." })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Uncheck: Wash up and eat." }),
+  ).toBeVisible();
 });
 test("Math Lab evaluates scientific expressions and plots functions", async ({
   page,
@@ -231,11 +241,19 @@ test("textbook shelf keeps external sources separate and makes private notes", a
 }) => {
   await start(page);
   await route(page, "textbooks");
-  await expect(page.getByRole("heading", { name: "Books, courses, and tools." })).toBeVisible();
-  const openStax = page.locator(".textbook-entry").filter({ hasText: "OpenStax" });
-  await expect(openStax.getByRole("link", { name: /Open source/ })).toHaveAttribute("href", "https://openstax.org/subjects");
+  await expect(
+    page.getByRole("heading", { name: "Books, courses, and tools." }),
+  ).toBeVisible();
+  const openStax = page
+    .locator(".textbook-entry")
+    .filter({ hasText: "OpenStax" });
+  await expect(
+    openStax.getByRole("link", { name: /Open source/ }),
+  ).toHaveAttribute("href", "https://openstax.org/subjects");
   await openStax.getByRole("button", { name: "Add notes" }).click();
-  await expect(page.getByLabel("Title", { exact: true })).toHaveValue("Reading notes · OpenStax");
+  await expect(page.getByLabel("Title", { exact: true })).toHaveValue(
+    "Reading notes · OpenStax",
+  );
 });
 test("snapshot export requires category selection and stays private", async ({
   page,
@@ -252,9 +270,7 @@ test("snapshot export requires category selection and stays private", async ({
   await page
     .getByRole("button", { name: "JSON snapshot", exact: true })
     .click();
-  expect((await download).suggestedFilename()).toBe(
-    "myhours-readonly.json",
-  );
+  expect((await download).suggestedFilename()).toBe("myhours-readonly.json");
 });
 test("restore preview preserves a complete fixture and maps only actual links", async ({
   page,
@@ -286,9 +302,15 @@ test("restore preview preserves a complete fixture and maps only actual links", 
     page.getByText("Example task (fictional)", { exact: true }),
   ).toBeVisible();
 });
-test("practice and baseline support a cited local draft without automatic writes", async ({
+test("practice records remain separate from on-device AI chat", async ({
   page,
 }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(Navigator.prototype, "gpu", {
+      configurable: true,
+      value: undefined,
+    });
+  });
   await start(page);
   await route(page, "learning");
   await page.getByRole("button", { name: "Focus areas", exact: true }).click();
@@ -325,23 +347,18 @@ test("practice and baseline support a cited local draft without automatic writes
     .getByRole("button", { name: "Save practice attempt", exact: true })
     .click();
   await route(page, "ai");
-  await page.getByRole("checkbox", { name: "focus", exact: true }).check();
-  await page.getByRole("checkbox", { name: "practice", exact: true }).check();
+  await expect(page.getByLabel("Choose AI model")).toHaveValue(
+    "gemma3-1b-it-q4f16_1-MLC",
+  );
+  await page.locator(".ai-context-menu > summary").click();
   await page
-    .getByRole("button", {
-      name: "Suggest my next practice challenge",
-      exact: true,
-    })
-    .click();
-  await expect(
-    page.getByText(/Draft challenge for Explain equations/),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("button", {
-      name: "Record · Explain equations",
-      exact: true,
-    }),
-  ).toBeVisible();
+    .getByLabel("Include my tasks, classes, notes and projects")
+    .check();
+  await page
+    .getByLabel("Message MyHours AI")
+    .fill("Suggest a practice question for my focus.");
+  await page.getByLabel("Send message").click();
+  await expect(page.getByText(/couldn’t start the model/i)).toBeVisible();
   await route(page, "tasks");
   await expect(
     page.getByRole("heading", { name: "No tasks yet" }),
@@ -379,7 +396,7 @@ test("school CSV imports require confirmation and skip duplicate source records"
     page.getByRole("button", { name: "Confirm 0 selected imports" }),
   ).toBeDisabled();
 });
-test("PDF import extracts a private note locally and image upload requires sign-in", async ({
+test("PDF import stays local and AI model controls need no provider setup", async ({
   page,
 }) => {
   await start(page);
@@ -399,9 +416,12 @@ test("PDF import extracts a private note locally and image upload requires sign-
     /FICTIONAL TEST SCHEDULE/,
   );
   await route(page, "ai");
-  await expect(page.getByLabel("Attach image", { exact: true })).toBeDisabled();
-  await page.getByLabel("AI context mode").selectOption("general");
+  await expect(page.getByText("Free · runs on this device")).toBeVisible();
   await expect(
-    page.getByText("No app records are included.", { exact: false }),
-  ).toBeVisible();
+    page.getByLabel("Choose AI model").locator("option"),
+  ).toHaveCount(3);
+  await page.locator(".ai-options > summary").click();
+  await expect(
+    page.getByLabel("Save chat history on this device"),
+  ).toBeChecked();
 });

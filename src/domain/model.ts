@@ -30,7 +30,9 @@ export const kinds = [
   "exportLog",
   "schoolSource",
   "importLog",
-  "flashcard","lessonProgress","lessonAttempt",
+  "flashcard",
+  "lessonProgress",
+  "lessonAttempt",
   "musicSource",
 ] as const;
 export type Kind = (typeof kinds)[number];
@@ -239,7 +241,17 @@ export const dataSchemas = {
   }),
   routine: z.object({
     title: text,
-      day: z.enum(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]).optional(),
+    day: z
+      .enum([
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+      ])
+      .optional(),
     frequency: optionalText,
     plan: optionalText,
     notes: optionalText,
@@ -247,7 +259,15 @@ export const dataSchemas = {
   routineCheck: z.object({
     title: text,
     date,
-    day: z.enum(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]),
+    day: z.enum([
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+      "sunday",
+    ]),
     stepId: text,
     step: text,
     completed: z.literal(true),
@@ -358,10 +378,38 @@ export const dataSchemas = {
     nextAction: optionalText,
     notes: optionalText,
   }),
-  musicSource:z.object({title:text,url:z.url().refine(v=>v.startsWith('https://'),'Use an HTTPS music URL.'),notes:optionalText}),
-  flashcard:z.object({title:text,front:z.string().min(1).max(10000),back:z.string().min(1).max(20000),deck:z.string().default('General'),courseId:optionalText,nextReview:date.optional(),notes:optionalText}),
-  lessonProgress:z.object({title:text,lessonId:text,status:z.enum(['in-progress','reviewed']),reflection:optionalText,nextReview:date.optional()}),
-  lessonAttempt:z.object({title:text,lessonId:text,questionId:text,answer:z.number().int().nonnegative(),correct:z.boolean(),checkedAt:instant,notes:optionalText}),
+  musicSource: z.object({
+    title: text,
+    url: z
+      .url()
+      .refine((v) => v.startsWith("https://"), "Use an HTTPS music URL."),
+    notes: optionalText,
+  }),
+  flashcard: z.object({
+    title: text,
+    front: z.string().min(1).max(10000),
+    back: z.string().min(1).max(20000),
+    deck: z.string().default("General"),
+    courseId: optionalText,
+    nextReview: date.optional(),
+    notes: optionalText,
+  }),
+  lessonProgress: z.object({
+    title: text,
+    lessonId: text,
+    status: z.enum(["in-progress", "reviewed"]),
+    reflection: optionalText,
+    nextReview: date.optional(),
+  }),
+  lessonAttempt: z.object({
+    title: text,
+    lessonId: text,
+    questionId: text,
+    answer: z.number().int().nonnegative(),
+    correct: z.boolean(),
+    checkedAt: instant,
+    notes: optionalText,
+  }),
   schoolSource: z.object({
     title: text,
     url: z
@@ -439,7 +487,7 @@ export const settingsSchema = z.object({
       return false;
     }
   }, "Use an IANA timezone such as America/Denver."),
-  theme: z.enum(["dark", "light", "system"]).default("dark"),
+  theme: z.enum(["dark", "light", "system"]).default("light"),
   wake: z
     .string()
     .regex(/^\d\d:\d\d$/)
@@ -452,28 +500,56 @@ export const settingsSchema = z.object({
   onboarded: z.boolean().default(false),
   currency: z.string().length(3).default("USD"),
   retainAi: z.boolean().default(false),
+  aiModel: z
+    .enum([
+      "gemma3-1b-it-q4f16_1-MLC",
+      "gemma-2-2b-it-q4f16_1-MLC",
+      "Llama-3.2-1B-Instruct-q4f16_1-MLC",
+    ])
+    .default("gemma3-1b-it-q4f16_1-MLC"),
+  saveAiChats: z.boolean().default(true),
   aiConsent: z.boolean().default(false),
   driveFolder: z.string().default(""),
   lastDriveSync: z.string().default(""),
   lastExport: z.string().default(""),
-  petEnabled:z.boolean().default(false),
-  petName:z.string().trim().min(1).max(30).default('Pip'),
-  petWalking:z.boolean().default(true),
-  uiStyle:z.enum(['studio','terminal','glass','soft']).default('studio'),
-  density:z.enum(['comfortable','compact']).default('comfortable'),
-  accent:z.union([z.literal(''),z.string().regex(/^#[0-9a-fA-F]{6}$/)]).default(''),
-  backgroundImage:z.string().max(4_200_000).refine(v=>!v||/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(v),'Use a supported local image.').default(''),
-  backgroundOpacity:z.number().min(0).max(1).default(.3),
-  backgroundBlur:z.number().min(0).max(24).default(6),
-  effectsEnabled:z.boolean().default(false),
-  weatherEffect:z.enum(['none','rain','snow']).default('none'),
-  effectIntensity:z.number().min(.1).max(1).default(.35),
-  cursorTrail:z.enum(['off','afterimage','dots','custom']).default('off'),
-  cursorImage:z.string().max(4_200_000).refine(v=>!v||/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(v)).default(''),
-  cursorSize:z.number().min(8).max(64).default(24),
-  musicEnabled:z.boolean().default(true),
-  hiddenRoutes:z.array(z.string().max(40)).max(30).default([]),
-  pinnedRoutes:z.array(z.string().max(40)).max(8).default(['today','tasks','calendar','learn']),
+  petEnabled: z.boolean().default(false),
+  petName: z.string().trim().min(1).max(30).default("Pip"),
+  petWalking: z.boolean().default(true),
+  uiStyle: z.enum(["studio", "terminal", "glass", "soft"]).default("studio"),
+  density: z.enum(["comfortable", "compact"]).default("comfortable"),
+  accent: z
+    .union([z.literal(""), z.string().regex(/^#[0-9a-fA-F]{6}$/)])
+    .default(""),
+  backgroundImage: z
+    .string()
+    .max(4_200_000)
+    .refine(
+      (v) =>
+        !v || /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(v),
+      "Use a supported local image.",
+    )
+    .default(""),
+  backgroundOpacity: z.number().min(0).max(1).default(0.3),
+  backgroundBlur: z.number().min(0).max(24).default(6),
+  effectsEnabled: z.boolean().default(false),
+  weatherEffect: z.enum(["none", "rain", "snow"]).default("none"),
+  effectIntensity: z.number().min(0.1).max(1).default(0.35),
+  cursorTrail: z.enum(["off", "afterimage", "dots", "custom"]).default("off"),
+  cursorImage: z
+    .string()
+    .max(4_200_000)
+    .refine(
+      (v) =>
+        !v || /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(v),
+    )
+    .default(""),
+  cursorSize: z.number().min(8).max(64).default(24),
+  musicEnabled: z.boolean().default(true),
+  hiddenRoutes: z.array(z.string().max(40)).max(30).default([]),
+  pinnedRoutes: z
+    .array(z.string().max(40))
+    .max(8)
+    .default(["today", "tasks", "calendar", "learn"]),
 });
 export type Preferences = z.infer<typeof settingsSchema>;
 export const defaultPreferences = (): Preferences =>
